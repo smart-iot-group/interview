@@ -1,0 +1,71 @@
+{% extends 'inventory/base.html' %}
+
+{% block content %}
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>{{ item.name }}</h2>
+            <p class="text-muted">{{ item.sku }} | {{ item.category.name }}</p>
+            <p>{{ item.description }}</p>
+            <h4>Total Stock: <span class="badge bg-primary">{{ item.get_total_stock }}</span></h4>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'stock-change-add' %}?item_id={{ item.pk }}" class="btn btn-primary">Update Stock</a>
+            <a href="{% url 'item-list' %}" class="btn btn-outline-secondary">Back to List</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">Stock by Location</div>
+                <ul class="list-group list-group-flush">
+                    {% for stock in stocks %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ stock.location.name }}
+                            <span class="badge bg-secondary rounded-pill">{{ stock.quantity }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item">No stock recorded.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">Recent History</div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Change</th>
+                                <th>Loc</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for change in recent_changes %}
+                                <tr>
+                                    <td>{{ change.get_change_type_display }}</td>
+                                    <td>{{ change.quantity }}</td>
+                                    <td>
+                                        {% if change.change_type == 'IN' %}
+                                            &rarr; {{ change.dest_location.name }}
+                                        {% elif change.change_type == 'OUT' %}
+                                            {{ change.source_location.name }} &rarr;
+                                        {% elif change.change_type == 'MOVE' %}
+                                            {{ change.source_location.name }} &rarr; {{ change.dest_location.name }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ change.timestamp|date:"Y-m-d H:i" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4">No history yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
