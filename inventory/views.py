@@ -4,7 +4,7 @@ from django.db.models import Sum
 from django.urls import reverse_lazy
 from django.contrib import messages
 from .models import Item, StockChange
-from .forms import StockChangeForm
+from .forms import StockChangeForm, ItemForm
 
 class ItemListView(ListView):
     model = Item
@@ -24,6 +24,16 @@ class ItemDetailView(DetailView):
         context['stocks'] = self.object.stocks.select_related('location').all()
         context['recent_changes'] = self.object.stock_changes.select_related('source_location', 'dest_location').order_by('-timestamp')[:10]
         return context
+
+class ItemCreateView(CreateView):
+    model = Item
+    form_class = ItemForm
+    template_name = 'inventory/item_form.html'
+    success_url = reverse_lazy('item-list')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Item created successfully.")
+        return super().form_valid(form)
 
 class StockChangeCreateView(CreateView):
     model = StockChange

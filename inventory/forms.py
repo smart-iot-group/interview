@@ -1,5 +1,17 @@
 from django import forms
-from .models import StockChange
+from .models import StockChange, Item
+
+class ItemForm(forms.ModelForm):
+    class Meta:
+        model = Item
+        fields = ['name', 'sku', 'category', 'description', 'price']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'sku': forms.TextInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
 
 class StockChangeForm(forms.ModelForm):
     class Meta:

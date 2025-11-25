@@ -1,5 +1,6 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 from .models import Item, Location, Stock, StockChange, Category
 
 class StockManagementTests(TestCase):
@@ -8,6 +9,7 @@ class StockManagementTests(TestCase):
         self.item = Item.objects.create(name="Laptop", sku="LPT001", category=self.category)
         self.warehouse = Location.objects.create(name="Main Warehouse")
         self.store = Location.objects.create(name="Retail Store")
+        self.client = Client()
 
     def test_incoming_delivery(self):
         """Test receiving stock increases quantity."""
@@ -89,3 +91,15 @@ class StockManagementTests(TestCase):
         with self.assertRaises(ValidationError):
             c = StockChange(item=self.item, change_type='IN', dest_location=self.warehouse, quantity=0)
             c.clean()
+
+    def test_create_item_view(self):
+        """Test creating a new item via the view."""
+        response = self.client.post(reverse('item-add'), {
+            'name': 'New Widget',
+            'sku': 'WIDGET001',
+            'category': self.category.id,
+            'description': 'A shiny new widget',
+            'price': '19.99'
+        })
+        self.assertEqual(response.status_code, 302) # Redirects on success
+        self.assertTrue(Item.objects.filter(sku='WIDGET001').exists())
